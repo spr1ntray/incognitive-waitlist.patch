@@ -4,12 +4,12 @@
   "contract_version": "SH-SOFTWARE-0.6/3",
   "id": "io.sprintray.incognitive-waitlist",
   "name": "Incognitive Waitlist",
-  "version": "1.1.0",
-  "description": "Берёт email аккаунта из Hub и записывает его в waitlist Incognitive через proxy.",
+  "version": "1.1.1",
+  "description": "Регистрация email в waitlist Incognitive.",
   "author": "sprintray",
   "presentation": {
     "display_name": "Incognitive Waitlist",
-    "description": "Для каждого выбранного аккаунта берёт email из базы Hub и отправляет одну заявку в waitlist Incognitive. Запрос идёт через proxy этого аккаунта. Без браузера и без AdsPower. Результат — таблица по каждому профилю.",
+    "description": "Email → waitlist Incognitive через proxy.",
     "assets": {
       "icon": "assets/icon.png",
       "image": "assets/image.png"
@@ -41,7 +41,7 @@
     {
       "id": "register_waitlist",
       "name": "Записать в waitlist",
-      "description": "Отправляет email аккаунта в waitlist Incognitive через его proxy.",
+      "description": "Регистрирует email в waitlist через proxy.",
       "risk": "external_write",
       "account_mode": "one_or_more",
       "permissions": {
