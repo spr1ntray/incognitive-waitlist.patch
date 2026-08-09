@@ -1,0 +1,118 @@
+{
+  "$schema": "https://soft-hub.local/schemas/plugin-v1.json",
+  "schema_version": 1,
+  "contract_version": "SH-SOFTWARE-0.6/3",
+  "id": "io.sprintray.incognitive-waitlist",
+  "name": "Incognitive Waitlist",
+  "version": "1.1.0",
+  "description": "Берёт email аккаунта из Hub и записывает его в waitlist Incognitive через proxy.",
+  "author": "sprintray",
+  "presentation": {
+    "display_name": "Incognitive Waitlist",
+    "description": "Для каждого выбранного аккаунта берёт email из базы Hub и отправляет одну заявку в waitlist Incognitive. Запрос идёт через proxy этого аккаунта. Без браузера и без AdsPower. Результат — таблица по каждому профилю.",
+    "assets": {
+      "icon": "assets/icon.png",
+      "image": "assets/image.png"
+    }
+  },
+  "compatibility": {
+    "hub": ">=0.6.8",
+    "python": ">=3.12,<3.13",
+    "os": ["darwin"]
+  },
+  "runtime": {
+    "type": "python",
+    "entrypoint": "plugin.main:run",
+    "protocol": "soft-hub-jsonl/1",
+    "state_model": "externally_reconciled",
+    "requirements": "requirements.txt",
+    "safe_stop": true,
+    "heartbeat_seconds": 15
+  },
+  "permissions": {
+    "secrets": ["email", "proxy"],
+    "network": ["docs.google.com"],
+    "chains": [],
+    "financial_risk": "none",
+    "browser": false,
+    "local_services": []
+  },
+  "actions": [
+    {
+      "id": "register_waitlist",
+      "name": "Записать в waitlist",
+      "description": "Отправляет email аккаунта в waitlist Incognitive через его proxy.",
+      "risk": "external_write",
+      "account_mode": "one_or_more",
+      "permissions": {
+        "secrets": ["email", "proxy"]
+      },
+      "resources": {
+        "account": ["email", "proxy"],
+        "settings": []
+      },
+      "output": {
+        "mode": "account_table",
+        "title": "Waitlist Incognitive",
+        "primary_kind": "account_snapshot",
+        "columns": [
+          {
+            "key": "outcome",
+            "title": "Итог",
+            "type": "string"
+          },
+          {
+            "key": "http_status",
+            "title": "HTTP",
+            "type": "integer"
+          },
+          {
+            "key": "error_code",
+            "title": "Код",
+            "type": "string"
+          }
+        ]
+      },
+      "options": {
+        "type": "object",
+        "properties": {
+          "account_concurrency": {
+            "type": "integer",
+            "title": "Параллельные аккаунты",
+            "description": "Сколько профилей софт обрабатывает одновременно. Потолок Hub для HTTP — 20.",
+            "default": 20,
+            "minimum": 1,
+            "maximum": 20,
+            "multipleOf": 1,
+            "x-ui": {
+              "group": "Выполнение",
+              "order": 0,
+              "unit": "аккаунтов"
+            }
+          },
+          "timeout_seconds": {
+            "type": "integer",
+            "title": "Таймаут запроса",
+            "description": "Сколько секунд ждать ответ proxy и Google Forms. Безопасное значение — 30.",
+            "default": 30,
+            "minimum": 5,
+            "maximum": 120,
+            "multipleOf": 1,
+            "x-ui": {
+              "group": "Сеть",
+              "order": 10,
+              "unit": "сек",
+              "advanced": true
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  ],
+  "ui": {
+    "accent": "#D9B65F",
+    "monogram": "IC"
+  }
+}
