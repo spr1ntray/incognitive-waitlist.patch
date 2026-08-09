@@ -4,10 +4,13 @@ from typing import Any
 
 from soft_hub.sdk import CancelledError, HubAccount, HubContext
 
-from plugin.client import normalize_email, submit_waitlist
+from plugin.client import SafeRequestError, normalize_email, submit_waitlist
 from plugin.proxy import proxy_to_url
 
 PRIMARY_KIND = "account_snapshot"
+
+# Only these keys may appear in account_snapshot data (no email/proxy/body).
+_RESULT_KEYS = frozenset({"outcome", "http_status", "error_code"})
 
 
 def run(context: HubContext) -> dict[str, Any]:
@@ -80,11 +83,29 @@ def _process_account(
         )
 
         write_sent = True
-        status_code = submit_waitlist(
-            email=email,
-            proxy=proxy,
-            timeout_seconds=timeout_seconds,
-        )
+        try:
+            status_code = submit_waitlist(
+                email=email,
+                proxy=proxy,
+                timeout_seconds=timeout_seconds,
+            )
+        except SafeRequestError as err:
+            write_sent = False
+            code = err.code if err.code in {"timeout", "proxy_error", "request_failed"} else "request_failed"
+            _finish(
+                context,
+                account,
+                status="failed",
+                stage="failed",
+                message="Не удалось отправить заявку",
+                result_status="failed",
+                data={
+                    "outcome": "failed",
+                    "http_status": 0,
+                    "error_code": code,
+                },
+            )
+            return "failed"
         write_sent = False
 
         if 200 <= status_code < 300:
@@ -100,7 +121,7 @@ def _process_account(
                 account,
                 status="succeeded",
                 stage="completed",
-                message="Email записан в waitlist",
+                message="Заявка отправлена",
                 result_status="succeeded",
                 data={
                     "outcome": "submitted",
@@ -150,6 +171,7 @@ def _process_account(
         )
         return "cancelled"
     except Exception:
+        # Never interpolate the exception — it may contain proxy URL / email.
         if write_sent:
             _finish(
                 context,
@@ -192,12 +214,13 @@ def _finish(
     data: dict[str, Any],
     progress: float | None = None,
 ) -> None:
+    safe_data = {k: data[k] for k in _RESULT_KEYS if k in data}
     context.result(
         f"{account.label}: {message}",
         kind=PRIMARY_KIND,
         status=result_status,
         account_id=account.id,
-        data=data,
+        data=safe_data,
     )
     kwargs: dict[str, Any] = {
         "status": status,

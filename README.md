@@ -5,7 +5,7 @@ Soft Hub patch for [incognitive.ai](https://incognitive.ai) waitlist.
 ## Install
 
 ```text
-dist/incognitive-waitlist-1.1.1.softhub.zip
+dist/incognitive-waitlist-1.1.2.softhub.zip
 ```
 
 Soft Hub → Patches → drop the zip (or GitHub / Patch Radar).
@@ -15,5 +15,5 @@ Soft Hub → Patches → drop the zip (or GitHub / Patch Radar).
 ```bash
 python3 scripts/build_plugin.py \
   incognitive-waitlist \
-  dist/incognitive-waitlist-1.1.1.softhub.zip
+  dist/incognitive-waitlist-1.1.2.softhub.zip
 ```
